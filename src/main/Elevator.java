@@ -1,8 +1,8 @@
 package main;
 
-import main.enums.ElevatorDirection;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -19,10 +19,9 @@ public class Elevator {
     private static int elevatorCount;
 
     private int id;
-    private int direction;
     private int currentFloor;
     private int nextFloor;
-    private PriorityQueue<Integer> destinationList;
+    private List<Integer> destinationList;
 
     static {
         elevatorCount = 0;
@@ -31,10 +30,9 @@ public class Elevator {
     public Elevator() {
         this.id = elevatorCount;
         elevatorCount++;
-        this.direction = 0;
         this.currentFloor = DEFAULT_FLOOR;
         this.nextFloor = DEFAULT_FLOOR;
-        this.destinationList = new PriorityQueue<Integer>();
+        this.destinationList = new LinkedList<Integer>();
     }
 
     public int getDirection() {
@@ -44,10 +42,6 @@ public class Elevator {
     public void setCurrentFloor(int currentFloor) {
         this.currentFloor = currentFloor;
     }
-
-    /*public void setDirection(ElevatorDirection direction) {
-        this.direction = direction;
-    }*/
 
     public int getCurrentFloor() {
         return currentFloor;
@@ -67,8 +61,12 @@ public class Elevator {
 
     public void addDestination(int floor) {
         if (nextFloor != floor && !destinationList.contains(floor)) {
-            if ((floor - this.getCurrentFloor()) *
-                    (floor - this.getNextFloor()) < 0) {
+            if (getDirection() == 0 && destinationList.isEmpty()) {
+                nextFloor = floor;
+            } else if ((floor - this.getCurrentFloor()) *
+                        (floor - this.getNextFloor()) < 0) {
+                // The requested floor is on the way to the current destination.
+                // Update the current destination to the requested floor
                 destinationList.add(nextFloor);
                 nextFloor = floor;
             } else {
@@ -90,8 +88,19 @@ public class Elevator {
             nextFloor = currentFloor;
         }
         else {
-            nextFloor = destinationList.poll();
+            nextFloor = popClosestRequest();
         }
+    }
+
+    private int popClosestRequest() {
+        if (destinationList.isEmpty()) return currentFloor;
+        int closest = destinationList.get(0);
+        int minDist = Math.abs(currentFloor - closest);
+        for (int floor : destinationList) {
+            closest = Math.abs(floor - currentFloor) < minDist ? floor : closest;
+        }
+        destinationList.remove(Integer.valueOf(closest));
+        return closest;
     }
 
     @Override

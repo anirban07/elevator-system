@@ -8,6 +8,14 @@ import java.util.TreeSet;
 /**
  * Created by Anirban on 10/25/2016.
  */
+
+/**
+ * This class represents a scheduler for elevators.
+ * It can take requests from users outside elevators (from different floors)
+ * and from users inside the elevators.
+ * It also moves every elevator based on the common outer requests and individual
+ * inner requests.
+ */
 public class Scheduler {
     public static final int MAX_ELEVATORS = 16;
     private List<Integer> requestList;
@@ -40,8 +48,13 @@ public class Scheduler {
 
     public void step() {
         for (Elevator elevator : elevators) {
-            if (elevator.getDirection() == 0) {  // standing still
+            if (elevator.getDirection() == 0) {
+                // The elevator reached destination and/or its destination list is empty
                 elevator.popDestination();
+            }
+            // if the elevator is standing still, then its destination list is empty
+            if (elevator.getDirection() == 0) {
+                // assign it its nearest requested floor
                 int nextClosestRequest = getClosestRequest(elevator);
                 if (nextClosestRequest != -1) {
                     elevator.addDestination(nextClosestRequest);
@@ -64,8 +77,9 @@ public class Scheduler {
     private int getClosestRequest(Elevator elevator) {
         if (requestList.isEmpty()) return -1;
         int min = requestList.get(0);
+        int minDist = Math.abs(elevator.getCurrentFloor() - min);
         for (int requestFloor : requestList) {
-            min = requestFloor < min ? requestFloor : min;
+            min = Math.abs(requestFloor - elevator.getCurrentFloor()) < minDist ? requestFloor : min;
         }
         return min;
     }
