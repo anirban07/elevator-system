@@ -1,5 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
+
 *.class
 
 # Mobile Tools for Java (J2ME)
@@ -14,3 +15,8 @@
 hs_err_pid*
 
 /.idea/
+
+.gitignore
+.idea/
+elevator-system.iml
+src/
