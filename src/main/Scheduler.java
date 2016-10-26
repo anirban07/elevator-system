@@ -1,9 +1,8 @@
 package main;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Created by Anirban on 10/25/2016.
@@ -32,6 +31,11 @@ public class Scheduler {
         requestList = new ArrayList<>();
     }
 
+    /**
+     * A request made by a user from inside a particular elevator
+     * @param elevatorId
+     * @param floor
+     */
     public void makeInnerRequest(int elevatorId, int floor) {
         if (floor < 1 || elevatorId < 0 || elevatorId > elevators.size() - 1) {
             throw new IllegalArgumentException();
@@ -39,6 +43,10 @@ public class Scheduler {
         elevators.get(elevatorId).addDestination(floor);
     }
 
+    /**
+     * A request made by a user from outside the elevator
+     * @param floor
+     */
     public void makeOuterRequest(int floor) {
         if (floor < 1) {
             throw new IllegalArgumentException();
@@ -50,6 +58,8 @@ public class Scheduler {
         for (Elevator elevator : elevators) {
             if (elevator.getDirection() == 0) {
                 // The elevator reached destination and/or its destination list is empty
+                // elevator reached outer request floor
+                requestList.remove(Integer.valueOf(elevator.getCurrentFloor()));
                 elevator.popDestination();
             }
             // if the elevator is standing still, then its destination list is empty
@@ -60,12 +70,16 @@ public class Scheduler {
                     elevator.addDestination(nextClosestRequest);
                 }
             } else {  // elevator moving. Add any requests that are in its path
-                for (int requestFloor : requestList) {
+                Iterator<Integer> iter = requestList.iterator();
+                while (iter.hasNext()) {
+                    int requestFloor = iter.next();
                     // add every request floor which is in between curr and next
                     if ((requestFloor - elevator.getCurrentFloor()) *
                             (requestFloor - elevator.getNextFloor()) < 0) {
                         elevator.addDestination(requestFloor);
+                        iter.remove();
                     }
+
                 }
             }
             // destination list of this elevator updated
@@ -83,4 +97,13 @@ public class Scheduler {
         }
         return min;
     }
+
+    public List<Elevator> getElevators() {
+        return this.elevators;
+    }
+
+    public List<Integer> getRequestList() {
+        return this.requestList;
+    }
+
 }
